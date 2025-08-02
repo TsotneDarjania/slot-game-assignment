@@ -7,10 +7,12 @@
       {
         "imports": {
           "three": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/"
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/",
+          "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.10.4/index.js"
         }
       }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
     <style>
       * {
         margin: auto;
@@ -26,10 +28,35 @@
         justify-content: center;
         align-items: center;
       }
+
+      #game_ui {
+        position: fixed;
+        bottom: 0;
+        padding: 20px;
+
+        display: none;
+      }
+
+      #action_button {
+        width: 90px;
+        height: 90px;
+
+        border-radius: 100%;
+        cursor: pointer;
+        font-size: 2rem;
+
+        border: 5px solid rgb(1, 82, 62);
+        background-color: rgb(21, 31, 30);
+
+        color: white;
+      }
     </style>
     <title>Best Slot Game</title>
   </head>
   <body>
     <script type="module" src="./main.js"></script>
+    <div id="game_ui">
+      <button id="action_button">Spin</button>
+    </div>
   </body>
 </html>

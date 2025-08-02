@@ -7,4 +7,6 @@ export const gameData = {
       },
     },
   },
+  reelsCount: 3,
+  symbolsCountPerReel: 3,
 };

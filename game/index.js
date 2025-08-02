@@ -2,15 +2,23 @@ import * as THREE from "three";
 import { SlotSymbol } from "./slotSymbol/slotSymbol.js";
 import { AssetsLoader } from "./assetsLoader/assetsLoader.js";
 import { gameData } from "../gameData.js";
+import { SlotMachine } from "./slotMachine/slotMachine.js";
+import { UI } from "./ui/ui.js";
 
 export class Game {
+  //Parameters
   width;
   height;
 
+  //Core
   scene;
   camera;
   renderer;
   assetsLoader;
+  ui;
+
+  //GameObjects
+  slotMachine;
 
   constructor(width, height) {
     this.width = width;
@@ -22,6 +30,7 @@ export class Game {
   createRenderer() {
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize(this.width, this.height);
+    document.body.appendChild(this.renderer.domElement);
   }
 
   createCamera() {
@@ -53,41 +62,46 @@ export class Game {
     this.assetsLoader = new AssetsLoader();
   }
 
+  createUI() {
+    this.ui = new UI();
+  }
+
   async setUp() {
     this.scene = new THREE.Scene();
 
     this.createRenderer();
     this.createCamera();
     this.createAssetsLoader();
+    this.createUI();
 
     await this.assetsLoader.startLoadAssets();
+    //Configure scene with loaded materials
+    this.scene._materials = this.assetsLoader.loadedMaterials;
 
     this.start();
-    this.update();
-
     this.renderer.setAnimationLoop(this.update.bind(this));
   }
 
   //run only once
   start() {
-    document.body.appendChild(this.renderer.domElement);
-
-    const s = new SlotSymbol(
-      90,
-      90,
-      this.assetsLoader.loadedMaterials.get(gameData.assets.symbols.apple.key)
-    );
-    this.scene.add(s.plane);
-
-    this.renderer.render(this.scene, this.camera);
+    this.ui.display();
+    this.addSlotMachine();
+    this.ui.addEventListeners({
+      handleStartSpin: this.handleStartSpin.bind(this),
+    });
   }
 
   //run continuously
   update() {
-    // this.renderer.render(this.scene, this.camera);
+    this.renderer.render(this.scene, this.camera);
   }
 
-  async loadAssets() {
-    return new Promise((res, rej) => {});
+  addSlotMachine() {
+    this.slotMachine = new SlotMachine(this.scene, 0, 0, 400, 400);
+  }
+
+  //handlers
+  handleStartSpin() {
+    this.slotMachine.startSpin();
   }
 }
