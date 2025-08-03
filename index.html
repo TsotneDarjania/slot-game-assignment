@@ -30,14 +30,17 @@
       }
 
       #game_ui {
-        position: fixed;
-        bottom: 0;
-        padding: 20px;
-
         display: none;
       }
 
-      #action_button {
+      .action-button {
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin: auto;
+
+        bottom: 30px;
+
         width: 90px;
         height: 90px;
 
@@ -56,7 +59,10 @@
   <body>
     <script type="module" src="./main.js"></script>
     <div id="game_ui">
-      <button id="action_button">Spin</button>
+      <button class="action-button" id="spin_button">Spin</button>
+      <button style="display: none" class="action-button" id="stop_button">
+        Stop
+      </button>
     </div>
   </body>
 </html>

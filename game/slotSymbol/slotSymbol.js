@@ -7,7 +7,15 @@ export class SlotSymbol {
   constructor(x, y, width, height, material) {
     this.geometry = new THREE.PlaneGeometry(width, height);
 
-    this.plane = new THREE.Mesh(this.geometry, material);
-    this.plane.position.set(x - width / 2, y, 0);
+    const maskedMaterial = material.clone();
+    maskedMaterial.stencilWrite = true;
+    maskedMaterial.stencilRef = 1;
+    maskedMaterial.stencilFunc = THREE.EqualStencilFunc;
+    maskedMaterial.stencilFail = THREE.KeepStencilOp;
+    maskedMaterial.stencilZFail = THREE.KeepStencilOp;
+    maskedMaterial.stencilZPass = THREE.KeepStencilOp;
+
+    this.plane = new THREE.Mesh(this.geometry, maskedMaterial);
+    this.plane.position.set(x, y, 0);
   }
 }

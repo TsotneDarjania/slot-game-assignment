@@ -3,17 +3,25 @@ import { gsap } from "gsap";
 
 import { gameData } from "../../../gameData.js";
 import { SlotSymbol } from "../../slotSymbol/slotSymbol.js";
+import { getRandomIntNumber } from "../../helper.js";
 
 export class Reel extends THREE.Group {
   paddingBeetveenSynbols;
   state = "readyForSpin";
 
+  symbolWidth;
   symbolHeight;
+
+  resultCombination = [];
+
+  spinIsFinishCallback;
 
   constructor(scene, x, width, height) {
     super();
 
+    this.symbolWidth = width;
     this.symbolHeight = width;
+
     this.position.x = x;
 
     this.scene = scene;
@@ -31,32 +39,50 @@ export class Reel extends THREE.Group {
 
     for (let i = 0; i < gameData.symbolsCountPerReel; i++) {
       const symbol = new SlotSymbol(
-        0,
+        -this.symbolWidth / 2,
         posY,
-        this.width,
-        this.width,
-        this.scene._materials.get(gameData.assets.symbols.apple.key)
+        this.symbolWidth,
+        this.symbolHeight,
+        this.scene._materials.get(this.getRandomSymbolMaterialKey())
       );
+
       posY -= this.paddingBeetveenSynbols;
       this.add(symbol.plane);
     }
   }
 
-  addNextSymbols() {
+  addNextSymbols(isLastSpin) {
     let posY =
       this.height / 2 + this.paddingBeetveenSynbols + Math.abs(this.position.y);
 
     for (let i = 0; i < gameData.symbolsCountPerReel; i++) {
       const symbol = new SlotSymbol(
-        0,
+        -this.symbolWidth / 2,
         posY,
-        this.width,
+        this.symbolWidth,
         this.symbolHeight,
-        this.scene._materials.get(gameData.assets.symbols.apple.key)
+        isLastSpin
+          ? this.scene._materials.get(
+              this.getTargetSymbolMaterialKey(this.resultCombination[i])
+            )
+          : this.scene._materials.get(this.getRandomSymbolMaterialKey())
       );
       posY += this.paddingBeetveenSynbols;
       this.add(symbol.plane);
     }
+  }
+
+  getTargetSymbolMaterialKey(symbolID) {
+    return Object.values(gameData.assets.symbols).find(
+      (symbol) => symbol.id === symbolID
+    ).key;
+  }
+
+  getRandomSymbolMaterialKey() {
+    const objectKeys = Object.keys(gameData.assets.symbols);
+    const randomKey = objectKeys[getRandomIntNumber(0, objectKeys.length - 1)];
+
+    return gameData.assets.symbols[randomKey].key;
   }
 
   destroyOldSymbols() {
@@ -74,16 +100,16 @@ export class Reel extends THREE.Group {
         this.destroyOldSymbols();
 
         if (this.state === "spin") {
-          this.addNextSymbols();
+          this.addNextSymbols(false);
           this.spin(
             -this.height - this.paddingBeetveenSynbols + this.position.y,
-            0.2,
+            0.12,
             "linear"
           );
         }
 
         if (this.state === "startStop") {
-          this.addNextSymbols();
+          this.addNextSymbols(true);
           this.spin(
             -this.height - this.paddingBeetveenSynbols + this.position.y,
             0.5,
@@ -102,29 +128,28 @@ export class Reel extends THREE.Group {
     });
   }
 
-  startSpin() {
+  startSpin(callback) {
     if (this.state !== "readyForSpin") return;
+    this.spinIsFinishCallback = callback;
     this.state = "spin";
     this.spin(-this.height - this.paddingBeetveenSynbols, 0.5, "back.in");
   }
 
-  stopSpin() {
+  stopSpin(combination) {
+    this.resultCombination = combination;
     this.state = "startStop";
   }
 
   reset() {
+    this.children.forEach((slotSymbol) => {
+      slotSymbol.position.y += this.position.y;
+    });
+
     this.position.y = 0;
 
-    const symbols = this.children;
-    let posY = this.height / 2;
-
-    for (let i = 0; i < symbols.length; i++) {
-      symbols[i].position.y = posY;
-      posY -= this.paddingBeetveenSynbols;
-    }
+    this.addNextSymbols();
 
     this.state = "readyForSpin";
-
-    this.addNextSymbols();
+    this.spinIsFinishCallback();
   }
 }

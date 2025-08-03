@@ -1,9 +1,8 @@
 import * as THREE from "three";
-import { SlotSymbol } from "./slotSymbol/slotSymbol.js";
 import { AssetsLoader } from "./assetsLoader/assetsLoader.js";
-import { gameData } from "../gameData.js";
 import { SlotMachine } from "./slotMachine/slotMachine.js";
 import { UI } from "./ui/ui.js";
+import { getSpinResult } from "../mock/mockServer.js";
 
 export class Game {
   //Parameters
@@ -17,8 +16,19 @@ export class Game {
   assetsLoader;
   ui;
 
+  isStopCommandByUser = false;
+  isMinTimePassedBeforeStop = false;
+
+  autoStopTime = 4000;
+  minTimeBeforeStop = 0;
+
+  minTimeOut;
+  autoStopTimeOut;
+
   //GameObjects
   slotMachine;
+
+  result;
 
   constructor(width, height) {
     this.width = width;
@@ -28,7 +38,7 @@ export class Game {
   }
 
   createRenderer() {
-    this.renderer = new THREE.WebGLRenderer();
+    this.renderer = new THREE.WebGLRenderer({ stencil: true });
     this.renderer.setSize(this.width, this.height);
     document.body.appendChild(this.renderer.domElement);
   }
@@ -88,6 +98,7 @@ export class Game {
     this.addSlotMachine();
     this.ui.addEventListeners({
       handleStartSpin: this.handleStartSpin.bind(this),
+      handleStopSpin: this.handleStopSpin.bind(this),
     });
   }
 
@@ -101,7 +112,55 @@ export class Game {
   }
 
   //handlers
-  handleStartSpin() {
-    this.slotMachine.startSpin();
+  async handleStartSpin() {
+    this.slotMachine.startSpin(this.handleSpinIsFinished.bind(this));
+
+    this.ui.hideSpinButton();
+    this.ui.showStopButton();
+
+    this.minTimeOut = setTimeout(() => {
+      this.isMinTimePassedBeforeStop = true;
+      if (this.isStopCommandByUser && this.result) {
+        console.log("stop by user");
+        this.slotMachine.stopSpin(this.result);
+      }
+    }, this.minTimeBeforeStop);
+
+    this.autoStopTimeOut = setTimeout(() => {
+      if (this.result) {
+        console.log("auto stop");
+        this.slotMachine.stopSpin(this.result);
+      }
+    }, this.autoStopTime);
+
+    this.result = await getSpinResult();
+
+    if (this.isMinTimePassedBeforeStop && this.isStopCommandByUser) {
+      console.log("stop by user");
+      this.slotMachine.stopSpin(this.result);
+    }
+  }
+
+  handleStopSpin() {
+    this.ui.disableStopButton();
+    this.isStopCommandByUser = true;
+
+    if (this.isMinTimePassedBeforeStop && this.result) {
+      console.log("stop by user");
+      this.slotMachine.stopSpin(this.result);
+    }
+  }
+
+  handleSpinIsFinished() {
+    this.result = null;
+
+    this.isStopCommandByUser = false;
+
+    clearTimeout(this.minTimeOut);
+    clearTimeout(this.autoStopTimeOut);
+
+    this.ui.hideStopButton();
+    this.ui.showSpinButton();
+    this.ui.enableStopButton();
   }
 }
