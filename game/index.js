@@ -109,8 +109,8 @@ export class Game {
   }
 
   addSlotMachine() {
-    const slotWidth = window.innerWidth > 580 ? 410 : 200;
-    this.slotMachine = new SlotMachine(this.scene, 0, 0, slotWidth, slotWidth);
+    const width = window.innerWidth > 580 ? 410 : 200;
+    this.slotMachine = new SlotMachine(this.scene, 0, 0, width, width);
   }
 
   //handlers
