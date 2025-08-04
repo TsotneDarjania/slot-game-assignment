@@ -134,6 +134,7 @@ export class Game {
     }, this.autoStopTime);
 
     this.result = await getSpinResult();
+    console.log(this.result);
 
     if (this.isMinTimePassedBeforeStop && this.isStopCommandByUser) {
       console.log("stop by user");
@@ -152,12 +153,26 @@ export class Game {
   }
 
   handleSpinIsFinished() {
+    clearTimeout(this.minTimeOut);
+    clearTimeout(this.autoStopTimeOut);
+
+    this.ui.disableStopButton();
+
+    if (this.result.winningLines.length > 0) {
+      this.slotMachine.showWinningLines(this.result.winningLines, () => {
+        console.log("Finish Selebration");
+
+        this.resetHeld();
+      });
+    } else {
+      this.resetHeld();
+    }
+  }
+
+  resetHeld() {
     this.result = null;
 
     this.isStopCommandByUser = false;
-
-    clearTimeout(this.minTimeOut);
-    clearTimeout(this.autoStopTimeOut);
 
     this.ui.hideStopButton();
     this.ui.showSpinButton();

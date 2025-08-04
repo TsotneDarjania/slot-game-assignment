@@ -16,6 +16,8 @@ export class Reel extends THREE.Group {
 
   spinIsFinishCallback;
 
+  resultSymbols = [];
+
   constructor(scene, x, width, height) {
     super();
 
@@ -69,6 +71,10 @@ export class Reel extends THREE.Group {
       );
       posY += this.paddingBeetveenSynbols;
       this.add(symbol.plane);
+
+      if (isLastSpin) {
+        this.resultSymbols.push(symbol);
+      }
     }
   }
 
@@ -130,6 +136,7 @@ export class Reel extends THREE.Group {
 
   startSpin(callback) {
     if (this.state !== "readyForSpin") return;
+    this.resultSymbols = [];
     this.spinIsFinishCallback = callback;
     this.state = "spin";
     this.spin(-this.height - this.paddingBeetveenSynbols, 0.5, "back.in");
@@ -151,5 +158,11 @@ export class Reel extends THREE.Group {
 
     this.state = "readyForSpin";
     this.spinIsFinishCallback();
+  }
+
+  showSymbolAnimation(symbolIndex, finishAnimation) {
+    this.resultSymbols[symbolIndex].playWinAnimation(() => {
+      finishAnimation();
+    });
   }
 }

@@ -29,9 +29,11 @@ export class SlotMachine extends THREE.Group {
   }
 
   addStencilMask() {
+    const extraSpace = 20;
+
     const maskGeometry = new THREE.PlaneGeometry(
-      this.width + this.width / gameData.reelsCount,
-      this.height + this.width / gameData.reelsCount
+      this.width + this.width / gameData.reelsCount + extraSpace,
+      this.height + this.width / gameData.reelsCount + extraSpace
     );
     const maskMaterial = new THREE.MeshBasicMaterial({
       colorWrite: false,
@@ -63,11 +65,15 @@ export class SlotMachine extends THREE.Group {
   }
 
   startSpin(finishCallback) {
+    this.enableAllSymbol();
     let finishReelsCount = 0;
 
     this.state = "spinning";
 
     this.reels.forEach((reel, index) => {
+      // Stop Previous Animations
+      reel.resultSymbols.forEach((symbol) => symbol.stopPlayAnimation());
+
       setTimeout(() => {
         reel.startSpin(() => {
           finishReelsCount++;
@@ -77,6 +83,46 @@ export class SlotMachine extends THREE.Group {
           }
         });
       }, index * this.spinDeleyBetweenReels);
+    });
+  }
+
+  async showWinningLines(lines, finishAnimation) {
+    this.disableAllSymbol();
+    for (let i = 0; i < lines.length; i++) {
+      await this.playLineAnimation(lines[i]);
+    }
+
+    finishAnimation();
+  }
+
+  disableAllSymbol() {
+    for (let i = 0; i < this.reels.length; i++) {
+      this.reels[i].resultSymbols.forEach((symbol) => {
+        symbol.disable();
+      });
+    }
+  }
+
+  enableAllSymbol() {
+    for (let i = 0; i < this.reels.length; i++) {
+      this.reels[i].resultSymbols.forEach((symbol) => {
+        symbol.enable();
+      });
+    }
+  }
+
+  playLineAnimation(line) {
+    let animatedSymbolsCount = 0;
+
+    return new Promise((res, rej) => {
+      Object.entries(line).forEach(([reelIndex, symbolIndex]) => {
+        this.reels[reelIndex].showSymbolAnimation(symbolIndex, () => {
+          animatedSymbolsCount++;
+          if (animatedSymbolsCount === gameData.symbolsCountPerReel) {
+            res();
+          }
+        });
+      });
     });
   }
 
