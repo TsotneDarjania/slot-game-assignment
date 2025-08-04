@@ -33,7 +33,7 @@ export const gameData = {
       },
     },
   },
-  reelsCount: 3,
+  reelsCount: 5,
   symbolsCountPerReel: 3,
   winningLines: [
     [0, 0, 0],

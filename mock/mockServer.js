@@ -15,7 +15,10 @@ export function getSpinResult() {
 }
 
 function generateResult() {
-  const combination = [generateReel(), generateReel(), generateReel()];
+  const combination = [];
+  for (let i = 0; i < gameData.reelsCount; i++) {
+    combination.push(generateReel());
+  }
   // const combination = [
   //   [1, 1, 4],
   //   [3, 1, 2],
