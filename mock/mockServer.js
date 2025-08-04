@@ -16,7 +16,6 @@ export function getSpinResult() {
 
 function generateResult() {
   const combination = [generateReel(), generateReel(), generateReel()];
-  // For Test
   // const combination = [
   //   [1, 1, 4],
   //   [3, 1, 2],

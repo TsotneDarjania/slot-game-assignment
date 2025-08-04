@@ -3,6 +3,7 @@ import { AssetsLoader } from "./assetsLoader/assetsLoader.js";
 import { SlotMachine } from "./slotMachine/slotMachine.js";
 import { UI } from "./ui/ui.js";
 import { getSpinResult } from "../mock/mockServer.js";
+import { percentage } from "./helper.js";
 
 export class Game {
   //Parameters
@@ -108,7 +109,8 @@ export class Game {
   }
 
   addSlotMachine() {
-    this.slotMachine = new SlotMachine(this.scene, 0, 0, 400, 400);
+    const slotWidth = window.innerWidth > 580 ? 410 : 200;
+    this.slotMachine = new SlotMachine(this.scene, 0, 0, slotWidth, slotWidth);
   }
 
   //handlers
